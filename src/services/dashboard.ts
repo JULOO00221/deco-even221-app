@@ -1,13 +1,21 @@
-import { pb } from "@/lib/pocketbase";
+import { supabase } from "@/lib/supabase";
 
-export const getTableau de bordStats = async () => {
-  const clients = await pb.collection("clients").getFullList();
-  const Prestations = await pb.collection("prestations").getFullList();
-  const Devis = await pb.collection("devis").getFullList();
+export const getTableauDeBordStats = async () => {
+  const { data: clients } = await supabase
+    .from("clients")
+    .select("*");
+
+  const { data: prestations } = await supabase
+    .from("prestations")
+    .select("*");
+
+  const { data: devis } = await supabase
+    .from("devis")
+    .select("*");
 
   return {
-    clients: clients.length,
-    Prestations: Prestations.length,
-    Devis: Devis.length,
+    clients: clients?.length || 0,
+    prestations: prestations?.length || 0,
+    devis: devis?.length || 0,
   };
 };

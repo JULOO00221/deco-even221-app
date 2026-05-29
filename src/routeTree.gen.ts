@@ -12,16 +12,14 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedServicesRouteImport } from './routes/_authenticated/services'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
 import { Route as AuthenticatedDevisIndexRouteImport } from './routes/_authenticated/devis.index'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients.index'
 import { Route as AuthenticatedDevisNewRouteImport } from './routes/_authenticated/devis.new'
-import { Route as AuthenticatedDevisIdRouteImport } from './routes/_authenticated/devis.$id'
+import { Route as AuthenticatedDevisDevisIdRouteImport } from './routes/_authenticated/devis.$devisId'
+import { Route as AuthenticatedDevisEditDevisIdRouteImport } from './routes/_authenticated/devis-edit.$devisId'
 import { Route as AuthenticatedClientsNewRouteImport } from './routes/_authenticated/clients.new'
-import { Route as AuthenticatedClientsIdRouteImport } from './routes/_authenticated/clients.$id'
-import { Route as AuthenticatedClientsIdEditRouteImport } from './routes/_authenticated/clients.$id.edit'
+import { Route as AuthenticatedClientsClientIdEditRouteImport } from './routes/_authenticated/clients.$clientId.edit'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -37,19 +35,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedServicesRoute = AuthenticatedServicesRouteImport.update({
-  id: '/services',
-  path: '/services',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedClientsRoute = AuthenticatedClientsRouteImport.update({
-  id: '/clients',
-  path: '/clients',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDevisIndexRoute = AuthenticatedDevisIndexRouteImport.update({
@@ -59,123 +47,115 @@ const AuthenticatedDevisIndexRoute = AuthenticatedDevisIndexRouteImport.update({
 } as any)
 const AuthenticatedClientsIndexRoute =
   AuthenticatedClientsIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedClientsRoute,
+    id: '/clients/',
+    path: '/clients/',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedDevisNewRoute = AuthenticatedDevisNewRouteImport.update({
   id: '/devis/new',
   path: '/devis/new',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedDevisIdRoute = AuthenticatedDevisIdRouteImport.update({
-  id: '/devis/$id',
-  path: '/devis/$id',
+const AuthenticatedDevisDevisIdRoute =
+  AuthenticatedDevisDevisIdRouteImport.update({
+    id: '/devis/$devisId',
+    path: '/devis/$devisId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedDevisEditDevisIdRoute =
+  AuthenticatedDevisEditDevisIdRouteImport.update({
+    id: '/devis-edit/$devisId',
+    path: '/devis-edit/$devisId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedClientsNewRoute = AuthenticatedClientsNewRouteImport.update({
+  id: '/clients/new',
+  path: '/clients/new',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedClientsNewRoute = AuthenticatedClientsNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => AuthenticatedClientsRoute,
-} as any)
-const AuthenticatedClientsIdRoute = AuthenticatedClientsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AuthenticatedClientsRoute,
-} as any)
-const AuthenticatedClientsIdEditRoute =
-  AuthenticatedClientsIdEditRouteImport.update({
-    id: '/edit',
-    path: '/edit',
-    getParentRoute: () => AuthenticatedClientsIdRoute,
+const AuthenticatedClientsClientIdEditRoute =
+  AuthenticatedClientsClientIdEditRouteImport.update({
+    id: '/clients/$clientId/edit',
+    path: '/clients/$clientId/edit',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/clients': typeof AuthenticatedClientsRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/services': typeof AuthenticatedServicesRoute
-  '/clients/$id': typeof AuthenticatedClientsIdRouteWithChildren
   '/clients/new': typeof AuthenticatedClientsNewRoute
-  '/devis/$id': typeof AuthenticatedDevisIdRoute
+  '/devis-edit/$devisId': typeof AuthenticatedDevisEditDevisIdRoute
+  '/devis/$devisId': typeof AuthenticatedDevisDevisIdRoute
   '/devis/new': typeof AuthenticatedDevisNewRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
   '/devis/': typeof AuthenticatedDevisIndexRoute
-  '/clients/$id/edit': typeof AuthenticatedClientsIdEditRoute
+  '/clients/$clientId/edit': typeof AuthenticatedClientsClientIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/services': typeof AuthenticatedServicesRoute
-  '/clients/$id': typeof AuthenticatedClientsIdRouteWithChildren
   '/clients/new': typeof AuthenticatedClientsNewRoute
-  '/devis/$id': typeof AuthenticatedDevisIdRoute
+  '/devis-edit/$devisId': typeof AuthenticatedDevisEditDevisIdRoute
+  '/devis/$devisId': typeof AuthenticatedDevisDevisIdRoute
   '/devis/new': typeof AuthenticatedDevisNewRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/devis': typeof AuthenticatedDevisIndexRoute
-  '/clients/$id/edit': typeof AuthenticatedClientsIdEditRoute
+  '/clients/$clientId/edit': typeof AuthenticatedClientsClientIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
-  '/_authenticated/clients': typeof AuthenticatedClientsRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/services': typeof AuthenticatedServicesRoute
-  '/_authenticated/clients/$id': typeof AuthenticatedClientsIdRouteWithChildren
   '/_authenticated/clients/new': typeof AuthenticatedClientsNewRoute
-  '/_authenticated/devis/$id': typeof AuthenticatedDevisIdRoute
+  '/_authenticated/devis-edit/$devisId': typeof AuthenticatedDevisEditDevisIdRoute
+  '/_authenticated/devis/$devisId': typeof AuthenticatedDevisDevisIdRoute
   '/_authenticated/devis/new': typeof AuthenticatedDevisNewRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/devis/': typeof AuthenticatedDevisIndexRoute
-  '/_authenticated/clients/$id/edit': typeof AuthenticatedClientsIdEditRoute
+  '/_authenticated/clients/$clientId/edit': typeof AuthenticatedClientsClientIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/login'
-    | '/clients'
     | '/dashboard'
-    | '/services'
-    | '/clients/$id'
     | '/clients/new'
-    | '/devis/$id'
+    | '/devis-edit/$devisId'
+    | '/devis/$devisId'
     | '/devis/new'
     | '/clients/'
     | '/devis/'
-    | '/clients/$id/edit'
+    | '/clients/$clientId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/dashboard'
-    | '/services'
-    | '/clients/$id'
     | '/clients/new'
-    | '/devis/$id'
+    | '/devis-edit/$devisId'
+    | '/devis/$devisId'
     | '/devis/new'
     | '/clients'
     | '/devis'
-    | '/clients/$id/edit'
+    | '/clients/$clientId/edit'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/login'
-    | '/_authenticated/clients'
     | '/_authenticated/dashboard'
-    | '/_authenticated/services'
-    | '/_authenticated/clients/$id'
     | '/_authenticated/clients/new'
-    | '/_authenticated/devis/$id'
+    | '/_authenticated/devis-edit/$devisId'
+    | '/_authenticated/devis/$devisId'
     | '/_authenticated/devis/new'
     | '/_authenticated/clients/'
     | '/_authenticated/devis/'
-    | '/_authenticated/clients/$id/edit'
+    | '/_authenticated/clients/$clientId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -207,25 +187,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/services': {
-      id: '/_authenticated/services'
-      path: '/services'
-      fullPath: '/services'
-      preLoaderRoute: typeof AuthenticatedServicesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/clients': {
-      id: '/_authenticated/clients'
-      path: '/clients'
-      fullPath: '/clients'
-      preLoaderRoute: typeof AuthenticatedClientsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/devis/': {
@@ -237,10 +203,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/clients/': {
       id: '/_authenticated/clients/'
-      path: '/'
+      path: '/clients'
       fullPath: '/clients/'
       preLoaderRoute: typeof AuthenticatedClientsIndexRouteImport
-      parentRoute: typeof AuthenticatedClientsRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/devis/new': {
       id: '/_authenticated/devis/new'
@@ -249,82 +215,57 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDevisNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/devis/$id': {
-      id: '/_authenticated/devis/$id'
-      path: '/devis/$id'
-      fullPath: '/devis/$id'
-      preLoaderRoute: typeof AuthenticatedDevisIdRouteImport
+    '/_authenticated/devis/$devisId': {
+      id: '/_authenticated/devis/$devisId'
+      path: '/devis/$devisId'
+      fullPath: '/devis/$devisId'
+      preLoaderRoute: typeof AuthenticatedDevisDevisIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/devis-edit/$devisId': {
+      id: '/_authenticated/devis-edit/$devisId'
+      path: '/devis-edit/$devisId'
+      fullPath: '/devis-edit/$devisId'
+      preLoaderRoute: typeof AuthenticatedDevisEditDevisIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/clients/new': {
       id: '/_authenticated/clients/new'
-      path: '/new'
+      path: '/clients/new'
       fullPath: '/clients/new'
       preLoaderRoute: typeof AuthenticatedClientsNewRouteImport
-      parentRoute: typeof AuthenticatedClientsRoute
+      parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/clients/$id': {
-      id: '/_authenticated/clients/$id'
-      path: '/$id'
-      fullPath: '/clients/$id'
-      preLoaderRoute: typeof AuthenticatedClientsIdRouteImport
-      parentRoute: typeof AuthenticatedClientsRoute
-    }
-    '/_authenticated/clients/$id/edit': {
-      id: '/_authenticated/clients/$id/edit'
-      path: '/edit'
-      fullPath: '/clients/$id/edit'
-      preLoaderRoute: typeof AuthenticatedClientsIdEditRouteImport
-      parentRoute: typeof AuthenticatedClientsIdRoute
+    '/_authenticated/clients/$clientId/edit': {
+      id: '/_authenticated/clients/$clientId/edit'
+      path: '/clients/$clientId/edit'
+      fullPath: '/clients/$clientId/edit'
+      preLoaderRoute: typeof AuthenticatedClientsClientIdEditRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
   }
 }
-
-interface AuthenticatedClientsIdRouteChildren {
-  AuthenticatedClientsIdEditRoute: typeof AuthenticatedClientsIdEditRoute
-}
-
-const AuthenticatedClientsIdRouteChildren: AuthenticatedClientsIdRouteChildren =
-  {
-    AuthenticatedClientsIdEditRoute: AuthenticatedClientsIdEditRoute,
-  }
-
-const AuthenticatedClientsIdRouteWithChildren =
-  AuthenticatedClientsIdRoute._addFileChildren(
-    AuthenticatedClientsIdRouteChildren,
-  )
-
-interface AuthenticatedClientsRouteChildren {
-  AuthenticatedClientsIdRoute: typeof AuthenticatedClientsIdRouteWithChildren
-  AuthenticatedClientsNewRoute: typeof AuthenticatedClientsNewRoute
-  AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
-}
-
-const AuthenticatedClientsRouteChildren: AuthenticatedClientsRouteChildren = {
-  AuthenticatedClientsIdRoute: AuthenticatedClientsIdRouteWithChildren,
-  AuthenticatedClientsNewRoute: AuthenticatedClientsNewRoute,
-  AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
-}
-
-const AuthenticatedClientsRouteWithChildren =
-  AuthenticatedClientsRoute._addFileChildren(AuthenticatedClientsRouteChildren)
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedClientsRoute: typeof AuthenticatedClientsRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedServicesRoute: typeof AuthenticatedServicesRoute
-  AuthenticatedDevisIdRoute: typeof AuthenticatedDevisIdRoute
+  AuthenticatedClientsNewRoute: typeof AuthenticatedClientsNewRoute
+  AuthenticatedDevisEditDevisIdRoute: typeof AuthenticatedDevisEditDevisIdRoute
+  AuthenticatedDevisDevisIdRoute: typeof AuthenticatedDevisDevisIdRoute
   AuthenticatedDevisNewRoute: typeof AuthenticatedDevisNewRoute
+  AuthenticatedClientsIndexRoute: typeof AuthenticatedClientsIndexRoute
   AuthenticatedDevisIndexRoute: typeof AuthenticatedDevisIndexRoute
+  AuthenticatedClientsClientIdEditRoute: typeof AuthenticatedClientsClientIdEditRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedClientsRoute: AuthenticatedClientsRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedServicesRoute: AuthenticatedServicesRoute,
-  AuthenticatedDevisIdRoute: AuthenticatedDevisIdRoute,
+  AuthenticatedClientsNewRoute: AuthenticatedClientsNewRoute,
+  AuthenticatedDevisEditDevisIdRoute: AuthenticatedDevisEditDevisIdRoute,
+  AuthenticatedDevisDevisIdRoute: AuthenticatedDevisDevisIdRoute,
   AuthenticatedDevisNewRoute: AuthenticatedDevisNewRoute,
+  AuthenticatedClientsIndexRoute: AuthenticatedClientsIndexRoute,
   AuthenticatedDevisIndexRoute: AuthenticatedDevisIndexRoute,
+  AuthenticatedClientsClientIdEditRoute: AuthenticatedClientsClientIdEditRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -339,13 +280,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

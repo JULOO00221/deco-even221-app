@@ -3,12 +3,14 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 
 export const Route = createFileRoute(
-  "/_authenticated/devis/new"
+  "/_authenticated/devis-edit/$devisId"
 )({
-  component: NewDevisPage,
+  component: EditPage,
 });
 
-function NewDevisPage() {
+function EditPage() {
+  const { devisId } = Route.useParams();
+
   const [clients, setClients] = useState<any[]>([]);
 
   const [clientId, setClientId] =
@@ -25,17 +27,11 @@ function NewDevisPage() {
   const [dateEvenement, setDateEvenement] =
     useState("");
 
-  const [items, setItems] = useState([
-    {
-      description: "",
-      quantite: 1,
-      prix_unitaire: 0,
-      total: 0,
-    },
-  ]);
+  const [items, setItems] = useState<any[]>([]);
 
   useEffect(() => {
     fetchClients();
+    loadDevis();
   }, []);
 
   async function fetchClients() {
@@ -45,6 +41,32 @@ function NewDevisPage() {
       .order("nom");
 
     setClients(data || []);
+  }
+
+  async function loadDevis() {
+    const { data: devis } = await supabase
+      .from("devis")
+      .select("*")
+      .eq("id", devisId)
+      .single();
+
+    if (!devis) return;
+
+    setClientId(devis.client_id || "");
+    setClientNom(devis.client_nom || "");
+    setEvenement(devis.evenement || "");
+    setLieu(devis.lieu || "");
+    setDateEvenement(
+      devis.date_evenement || ""
+    );
+
+    const { data: devisItems } =
+      await supabase
+        .from("devis_items")
+        .select("*")
+        .eq("devis_id", devisId);
+
+    setItems(devisItems || []);
   }
 
   function addLine() {
@@ -61,9 +83,7 @@ function NewDevisPage() {
 
   function removeLine(index: number) {
     const updated = [...items];
-
     updated.splice(index, 1);
-
     setItems(updated);
   }
 
@@ -87,37 +107,34 @@ function NewDevisPage() {
   }
 
   const totalGeneral = items.reduce(
-    (acc, item) => acc + item.total,
+    (acc, item) =>
+      acc + Number(item.total || 0),
     0
   );
 
   async function saveDevis() {
-    const numero =
-      "DEV-" + Date.now();
-
-    const { data, error } =
-      await supabase
-        .from("devis")
-        .insert({
-  client_id: clientId,
-  client_nom: clientNom,
-  evenement,
-  lieu,
-  date_evenement: dateEvenement,
-  numero,
-  total: totalGeneral,
-  statut: "brouillon",
-})
-        .select()
-        .single();
+    const { error } = await supabase
+      .from("devis")
+      .update({
+        client_id: clientId,
+        client_nom: clientNom,
+        evenement,
+        lieu,
+        date_evenement: dateEvenement,
+        total: totalGeneral,
+      })
+      .eq("id", devisId);
 
     if (error) {
       console.log(error);
-      alert("Erreur devis");
+      alert("Erreur mise à jour devis");
       return;
     }
 
-    const devisId = data.id;
+    await supabase
+      .from("devis_items")
+      .delete()
+      .eq("devis_id", devisId);
 
     const devisItems = items.map(
       (item) => ({
@@ -131,16 +148,10 @@ function NewDevisPage() {
       })
     );
 
-    const { data: insertedItems, error: itemsError } =
-  await supabase
-    .from("devis_items")
-    .insert(devisItems)
-    .select();
-
-console.log("DEVIS ID =", devisId);
-console.log("ITEMS A INSERER =", devisItems);
-console.log("ITEMS INSERES =", insertedItems);
-console.log("ERREUR =", itemsError);
+    const { error: itemsError } =
+      await supabase
+        .from("devis_items")
+        .insert(devisItems);
 
     if (itemsError) {
       console.log(itemsError);
@@ -148,7 +159,8 @@ console.log("ERREUR =", itemsError);
       return;
     }
 
-    window.location.href = `/devis/${devisId}`;
+    window.location.href =
+      `/devis/${devisId}`;
   }
 
   return (
@@ -159,7 +171,7 @@ console.log("ERREUR =", itemsError);
         </p>
 
         <h1 className="text-5xl font-serif text-[#2d1b12]">
-          Nouveau devis
+          Modifier devis
         </h1>
       </div>
 
@@ -206,9 +218,7 @@ console.log("ERREUR =", itemsError);
           </div>
 
           <div>
-            <label className="block mb-2">
-              Événement
-            </label>
+            <label>Événement</label>
 
             <input
               type="text"
@@ -223,9 +233,7 @@ console.log("ERREUR =", itemsError);
           </div>
 
           <div>
-            <label className="block mb-2">
-              Lieu
-            </label>
+            <label>Lieu</label>
 
             <input
               type="text"
@@ -238,9 +246,7 @@ console.log("ERREUR =", itemsError);
           </div>
 
           <div>
-            <label className="block mb-2">
-              Date événement
-            </label>
+            <label>Date</label>
 
             <input
               type="date"
@@ -255,85 +261,76 @@ console.log("ERREUR =", itemsError);
           </div>
         </div>
 
-        <div className="space-y-4">
-          {items.map((item, index) => (
-            <div
-              key={index}
-              className="grid grid-cols-12 gap-4"
-            >
-              <input
-                type="text"
-                placeholder="Description"
-                value={item.description}
-                onChange={(e) =>
-                  updateItem(
-                    index,
-                    "description",
-                    e.target.value
-                  )
-                }
-                className="col-span-5 border rounded-xl p-4"
-              />
+        {items.map((item, index) => (
+          <div
+            key={index}
+            className="grid grid-cols-12 gap-4 mb-4"
+          >
+            <input
+              className="col-span-5 border rounded-xl p-4"
+              value={item.description}
+              onChange={(e) =>
+                updateItem(
+                  index,
+                  "description",
+                  e.target.value
+                )
+              }
+            />
 
-              <input
-                type="number"
-                placeholder="Qté"
-                value={item.quantite}
-                onChange={(e) =>
-                  updateItem(
-                    index,
-                    "quantite",
-                    Number(
-                      e.target.value
-                    )
-                  )
-                }
-                className="col-span-2 border rounded-xl p-4"
-              />
+            <input
+              type="number"
+              className="col-span-2 border rounded-xl p-4"
+              value={item.quantite}
+              onChange={(e) =>
+                updateItem(
+                  index,
+                  "quantite",
+                  Number(e.target.value)
+                )
+              }
+            />
 
-              <input
-                type="number"
-                placeholder="Prix"
-                value={
-                  item.prix_unitaire
-                }
-                onChange={(e) =>
-                  updateItem(
-                    index,
-                    "prix_unitaire",
-                    Number(
-                      e.target.value
-                    )
-                  )
-                }
-                className="col-span-2 border rounded-xl p-4"
-              />
+            <input
+              type="number"
+              className="col-span-2 border rounded-xl p-4"
+              value={item.prix_unitaire}
+              onChange={(e) =>
+                updateItem(
+                  index,
+                  "prix_unitaire",
+                  Number(e.target.value)
+                )
+              }
+            />
 
-              <div className="col-span-2 border rounded-xl p-4 flex items-center font-bold">
-                {item.total.toLocaleString()} FCFA
-              </div>
-
-              <button
-                onClick={() =>
-                  removeLine(index)
-                }
-                className="bg-red-500 text-white rounded-xl"
-              >
-                ✕
-              </button>
+            <div className="col-span-2 border rounded-xl p-4 font-bold">
+              {Number(
+                item.total
+              ).toLocaleString()}
+              {" "}FCFA
             </div>
-          ))}
-        </div>
+
+            <button
+              onClick={() =>
+                removeLine(index)
+              }
+              className="bg-red-500 text-white rounded-xl"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
 
         <button
           onClick={addLine}
-          className="mt-6 bg-gray-100 hover:bg-gray-200 px-6 py-3 rounded-xl"
+          className="mt-4 bg-gray-100 px-6 py-3 rounded-xl"
         >
           + Ajouter ligne
         </button>
 
         <div className="mt-10 flex justify-between items-center">
-          <div className="text-3xl font-bold text-[#2d1b12]">
+          <div className="text-3xl font-bold">
             Total :
             {" "}
             {totalGeneral.toLocaleString()}
@@ -343,9 +340,9 @@ console.log("ERREUR =", itemsError);
 
           <button
             onClick={saveDevis}
-            className="bg-[#d6a128] hover:bg-[#bf8f22] text-white px-8 py-4 rounded-xl font-bold"
+            className="bg-[#d6a128] text-white px-8 py-4 rounded-xl font-bold"
           >
-            Enregistrer devis
+            Enregistrer modifications
           </button>
         </div>
       </div>

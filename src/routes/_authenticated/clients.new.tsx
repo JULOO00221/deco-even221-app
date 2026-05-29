@@ -1,19 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-
-import { pb } from "@/lib/pb";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-
-import {
-  ArrowLeft,
-  User,
-  Phone,
-  Mail,
-  MapPin,
-} from "lucide-react";
+import { createClient } from "../../services/clients";
 
 export const Route = createFileRoute(
   "/_authenticated/clients/new"
@@ -24,157 +11,140 @@ export const Route = createFileRoute(
 function NewClientPage() {
   const navigate = useNavigate();
 
-  const [nom, setNom] = useState("");
-  const [telephone, setTelephone] = useState("");
-  const [mail, setMail] = useState("");
-  const [adresse, setAdresse] = useState("");
+  const [formData, setFormData] = useState({
+    nom: "",
+    telephone: "",
+    email: "",
+    adresse: "",
+  });
 
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (
-    e: React.FormEvent
-  ) => {
-    e.preventDefault();
-
+  const handleSubmit = async () => {
     try {
-      setLoading(true);
+      console.log(formData);
 
-      await pb.collection("clients").create({
-        nom,
-        telephone,
-        mail,
-        adresse,
-      });
+      const result = await createClient(formData);
 
-      navigate({
-        to: "/clients",
-      });
-    } catch (err) {
-      console.error(err);
-      alert("Erreur création client");
-    } finally {
-      setLoading(false);
+      console.log(result);
+
+      alert("Client créé avec succès");
+
+      navigate({ to: "/clients" });
+    } catch (error) {
+      console.error(error);
+
+      alert("Erreur lors de la création");
     }
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-start justify-between">
+    <div className="p-8 w-full">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <p className="text-sm uppercase tracking-[0.3em] text-gold">
-            CLIENT
+          <p className="text-[#d6a128] uppercase tracking-[0.3em] text-sm font-semibold">
+            Client
           </p>
 
-          <h1 className="font-display text-6xl leading-none">
+          <h1 className="text-5xl font-serif text-[#2d1b12]">
             Nouveau client
           </h1>
         </div>
 
-        <Link to="/clients">
-          <Button variant="outline">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour
-          </Button>
+        <Link
+          to="/clients"
+          className="border px-5 py-3 rounded-xl bg-white hover:bg-gray-50"
+        >
+          ← Retour
         </Link>
       </div>
 
-      <Card className="border-gold/20">
-        <CardContent className="p-6">
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-6"
+      <div className="bg-white rounded-3xl p-8 shadow-sm max-w-4xl">
+        <div className="space-y-6">
+
+          <div>
+            <label className="block mb-2 font-medium">
+              Nom
+            </label>
+
+            <input
+              type="text"
+              placeholder="Nom du client"
+              className="w-full border rounded-xl p-4"
+              value={formData.nom}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  nom: e.target.value,
+                })
+              }
+            />
+          </div>
+
+          <div>
+            <label className="block mb-2 font-medium">
+              Téléphone
+            </label>
+
+            <input
+              type="text"
+              placeholder="77XXXXXXX"
+              className="w-full border rounded-xl p-4"
+              value={formData.telephone}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  telephone: e.target.value,
+                })
+              }
+            />
+          </div>
+
+          <div>
+            <label className="block mb-2 font-medium">
+              Email
+            </label>
+
+            <input
+              type="email"
+              placeholder="email@gmail.com"
+              className="w-full border rounded-xl p-4"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  email: e.target.value,
+                })
+              }
+            />
+          </div>
+
+          <div>
+            <label className="block mb-2 font-medium">
+              Adresse
+            </label>
+
+            <input
+              type="text"
+              placeholder="Dakar"
+              className="w-full border rounded-xl p-4"
+              value={formData.adresse}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  adresse: e.target.value,
+                })
+              }
+            />
+          </div>
+
+          <button
+            onClick={handleSubmit}
+            className="bg-[#d6a128] text-white px-6 py-4 rounded-xl font-bold"
           >
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Nom
-              </label>
+            Créer le client
+          </button>
 
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-
-                <Input
-                  value={nom}
-                  onChange={(e) =>
-                    setNom(e.target.value)
-                  }
-                  required
-                  placeholder="Nom du client"
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Téléphone
-              </label>
-
-              <div className="relative">
-                <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-
-                <Input
-                  value={telephone}
-                  onChange={(e) =>
-                    setTelephone(e.target.value)
-                  }
-                  required
-                  placeholder="77XXXXXXX"
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Email
-              </label>
-
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-
-                <Input
-                  type="email"
-                  value={mail}
-                  onChange={(e) =>
-                    setMail(e.target.value)
-                  }
-                  placeholder="email@gmail.com"
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Adresse
-              </label>
-
-              <div className="relative">
-                <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-
-                <Input
-                  value={adresse}
-                  onChange={(e) =>
-                    setAdresse(e.target.value)
-                  }
-                  placeholder="Dakar"
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              disabled={loading}
-              className="bg-gradient-gold text-primary-foreground hover:opacity-90"
-            >
-              {loading
-                ? "Création..."
-                : "Créer le client"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

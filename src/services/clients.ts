@@ -1,9 +1,22 @@
-import { pb } from "@/lib/pocketbase";
+import { supabase } from "../lib/supabase";
 
 export const getClients = async () => {
-  return await pb.collection("clients").getFullList();
+  const { data, error } = await supabase
+    .from("clients")
+    .select("*");
+
+  if (error) throw error;
+
+  return data;
 };
 
-export const createClient = async (data: any) => {
-  return await pb.collection("clients").create(data);
+export const createClient = async (client: any) => {
+  const { data, error } = await supabase
+    .from("clients")
+    .insert([client])
+    .select();
+
+  if (error) throw error;
+
+  return data;
 };

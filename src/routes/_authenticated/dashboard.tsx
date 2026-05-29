@@ -1,34 +1,17 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "../../lib/supabase";
 import {
-  createFileRoute,
-  Link,
-} from "@tanstack/react-router";
-
-import { useQuery } from "@tanstack/react-query";
-
-import {
-  pb,
-  type Quotation,
-} from "@/lib/pb";
-
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
-import {
-  Users,
-  Sparkles,
-  FileText,
-  TrendingUp,
-  Plus,
-} from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-
-import { Badge } from "@/components/ui/badge";
-
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 export const Route = createFileRoute(
   "/_authenticated/dashboard"
 )({
@@ -36,241 +19,257 @@ export const Route = createFileRoute(
 });
 
 function DashboardPage() {
+  const [stats, setStats] = useState({
+    clients: 0,
+    devis: 0,
+    total: 0,
+    payes: 0,
+  });
+  
 
-  const { data: stats } = useQuery({
-    queryKey: ["dashboard-stats"],
+  const [recentDevis, setRecentDevis] = useState<any[]>([]);
+  const [monthlyData, setMonthlyData] =
+  useState<any[]>([]);
 
-    queryFn: async () => {
+const [statusData, setStatusData] =
+  useState<any[]>([]);
+  useEffect(() => {
+    loadDashboard();
+  }, []);
 
-      const [
-        clients,
-        services,
-        quotations,
-      ] = await Promise.all([
+  async function loadDashboard() {
+    const { count: clientsCount } = await supabase
+      .from("clients")
+      .select("*", { count: "exact", head: true });
 
-        pb
-          .collection("clients")
-          .getFullList()
-          .catch(() => []),
+    const { data: devisData } = await supabase
+      .from("devis")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-        pb
-          .collection("prestations")
-          .getFullList()
-          .catch(() => []),
+    const total =
+      devisData?.reduce(
+        (sum, item) => sum + Number(item.total || 0),
+        0
+      ) || 0;
 
-        pb
-          .collection("devis")
-          .getFullList({
-            sort: "-created",
-            expand: "client",
-          })
-          .catch(() => []),
-      ]);
+    const payes =
+  devisData?.filter(
+    (item) =>
+      item.statut?.toLowerCase() === "paye"
+  ).length || 0;
 
-      const items =
-        quotations as any as Quotation[];
+    setStats({
+      clients: clientsCount || 0,
+      devis: devisData?.length || 0,
+      total,
+      payes,
+    });
 
-      const revenue = items.reduce(
-  (s: number, q: any) =>
-    s + Number(q.total || 0),
-  0
+    setRecentDevis(
+      devisData?.slice(0, 5) || []
+    );
+    const monthlyTotals: any = {};
+
+devisData?.forEach((item) => {
+  const date = new Date(
+    item.created_at
+  );
+
+  const month =
+    date.toLocaleDateString(
+      "fr-FR",
+      {
+        month: "short",
+      }
+    );
+
+  if (!monthlyTotals[month]) {
+    monthlyTotals[month] = 0;
+  }
+
+  monthlyTotals[month] += Number(
+    item.total || 0
+  );
+});
+
+setMonthlyData(
+  Object.entries(monthlyTotals).map(
+    ([month, total]) => ({
+      month,
+      total,
+    })
+  )
 );
 
-      return {
-        clients: clients.length,
-        services: services.length,
-        quotations: quotations.length,
-        revenue,
-        recent: items.slice(0, 5),
-      };
-    },
-  });
+const chartData = [
+  {
+    name: "Brouillon",
+    value:
+      devisData?.filter(
+        (d) => d.statut === "brouillon"
+      ).length || 0,
+  },
+  {
+    name: "Validé",
+    value:
+      devisData?.filter(
+        (d) => d.statut === "valide"
+      ).length || 0,
+  },
+  {
+    name: "Payé",
+    value:
+      devisData?.filter(
+        (d) => d.statut === "paye"
+      ).length || 0,
+  },
+].filter((item) => item.value > 0);
 
-  const cards = [
-    {
-      title: "Clients",
-      value: stats?.clients ?? "—",
-      icon: Users,
-    },
-
-    {
-      title: "Prestations",
-      value: stats?.services ?? "—",
-      icon: Sparkles,
-    },
-
-    {
-      title: "Devis",
-      value: stats?.quotations ?? "—",
-      icon: FileText,
-    },
-
-    {
-      title: "Revenus",
-      value: stats
-  ? `${Number(
-      stats.revenue
-    ).toLocaleString("fr-FR")} FCFA`
-  : "—",
-      icon: TrendingUp,
-    },
-  ];
-
+setStatusData(chartData);
+}
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="p-8 w-full">
 
-      {/* HEADER */}
+      <p className="uppercase tracking-[0.3em] text-sm text-[#d6a128] font-semibold">
+        Tableau de bord
+      </p>
 
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <h1 className="text-5xl font-serif text-[#2d1b12] mb-8">
+        Dashboard
+      </h1>
 
-        <div>
+      <div className="grid grid-cols-4 gap-6 mb-8">
 
-          <p className="text-xs uppercase tracking-[0.3em] text-gold">
-            Tableau de bord
-          </p>
+        <div className="bg-white p-6 rounded-2xl">
+          <p>Clients</p>
+          <h2 className="text-4xl font-bold">
+            {stats.clients}
+          </h2>
+        </div>
 
-          <h1 className="mt-1 font-display text-4xl">
-            Bonjour
-          </h1>
+        <div className="bg-white p-6 rounded-2xl">
+          <p>Devis</p>
+          <h2 className="text-4xl font-bold">
+            {stats.devis}
+          </h2>
+        </div>
 
-          <div className="gold-divider mt-3 max-w-xs" />
+        <div className="bg-white p-6 rounded-2xl">
+          <p>Montant total</p>
+          <h2 className="text-3xl font-bold text-[#d6a128]">
+            {stats.total.toLocaleString()} FCFA
+          </h2>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl">
+          <p>Payés</p>
+          <h2 className="text-4xl font-bold text-green-600">
+            {stats.payes}
+          </h2>
+        </div>
+
+      </div>
+      <div className="grid grid-cols-2 gap-6 mb-8">
+
+  <div className="bg-white rounded-2xl p-6">
+    <h2 className="text-xl font-bold mb-4">
+      Chiffre d'affaires par mois
+    </h2>
+
+    <ResponsiveContainer
+      width="100%"
+      height={300}
+    >
+      <BarChart
+        data={monthlyData}
+      >
+        <XAxis dataKey="month" />
+        <YAxis />
+        <Tooltip />
+
+        <Bar
+          dataKey="total"
+          fill="#d6a128"
+        />
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
+
+  <div className="bg-white rounded-2xl p-6">
+    <h2 className="text-xl font-bold mb-4">
+      Répartition des devis
+    </h2>
+
+    <ResponsiveContainer
+      width="100%"
+      height={300}
+    >
+      <PieChart>
+        <Pie
+          data={statusData}
+          dataKey="value"
+          nameKey="name"
+          outerRadius={100}
+          label
+        >
+          <Cell fill="#d6a128" />
+          <Cell fill="#4CAF50" />
+          <Cell fill="#2196F3" />
+        </Pie>
+        <Tooltip />
+      </PieChart>
+    </ResponsiveContainer>
+  </div>
+
+</div>
+      <div className="bg-white rounded-2xl p-6">
+
+        <h2 className="text-2xl font-bold mb-4">
+          Derniers devis
+        </h2>
+
+        <div className="space-y-4">
+
+          {recentDevis.map((item) => (
+
+            <div
+              key={item.id}
+              className="border rounded-xl p-4"
+            >
+              <p className="font-bold">
+                {item.numero}
+              </p>
+
+              <p>
+                {Number(item.total).toLocaleString()}
+                {" "}
+                FCFA
+              </p>
+
+              <p
+  className={`inline-block px-3 py-1 rounded-full text-sm mt-2 ${
+    item.statut === "paye"
+      ? "bg-green-100 text-green-700"
+      : item.statut === "valide"
+      ? "bg-blue-100 text-blue-700"
+      : "bg-orange-100 text-orange-700"
+  }`}
+>
+  {item.statut === "paye"
+    ? "Payé"
+    : item.statut === "valide"
+    ? "Validé"
+    : "Brouillon"}
+</p>
+            </div>
+
+          ))}
 
         </div>
 
-        <Link to="/devis/new">
-
-          <Button className="bg-gradient-gold text-primary-foreground hover:opacity-90">
-
-            <Plus className="mr-1 h-4 w-4" />
-
-            Nouveau devis
-
-          </Button>
-
-        </Link>
       </div>
 
-      {/* STATS */}
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-
-        {cards.map((c) => (
-
-          <Card
-            key={c.title}
-            className="border-gold/20 shadow-soft"
-          >
-
-            <CardContent className="flex items-center justify-between p-6">
-
-              <div>
-
-                <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                  {c.title}
-                </p>
-
-                <p className="mt-2 text-3xl font-semibold">
-                  {c.value}
-                </p>
-
-              </div>
-
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-gold text-primary-foreground">
-
-                <c.icon className="h-5 w-5" />
-
-              </div>
-
-            </CardContent>
-
-          </Card>
-        ))}
-      </div>
-
-      {/* RECENT QUOTATIONS */}
-
-      <Card className="border-gold/20">
-
-        <CardHeader>
-
-          <CardTitle className="font-display text-2xl">
-            Devis récents
-          </CardTitle>
-
-        </CardHeader>
-
-        <CardContent>
-
-          {!stats?.recent?.length ? (
-
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              Aucun devis pour le moment
-            </p>
-
-          ) : (
-
-            <div className="divide-y divide-gold/15">
-
-              {stats.recent.map((q: any) => (
-
-                <Link
-                  key={q.id}
-                  to="/devis/$id"
-                  params={{
-                    id: q.id,
-                  }}
-                  className="flex items-center justify-between gap-4 py-3 hover:bg-muted/40"
-                >
-
-                  <div>
-
-                    <p className="font-medium">
-                      {q.numero}
-                    </p>
-
-                    <p className="text-xs text-muted-foreground">
-
-                      {q.expand?.client?.nom || "—"}
-
-                      {" · "}
-
-                      {new Date(
-                        q.created
-                      ).toLocaleDateString(
-                        "fr-FR"
-                      )}
-
-                    </p>
-
-                  </div>
-
-                  <div className="flex items-center gap-3">
-
-                    <Badge
-                      variant="outline"
-                      className="border-gold/40 capitalize"
-                    >
-                      {q.statut}
-                    </Badge>
-
-                    <span className="font-display text-lg">
-
-                      {Number(
-                        q.total || 0
-                      ).toLocaleString(
-                        "fr-FR"
-                      )} FCFA
-
-                    </span>
-
-                  </div>
-
-                </Link>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }

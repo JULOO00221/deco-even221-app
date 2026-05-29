@@ -1,237 +1,118 @@
 import {
   createFileRoute,
   Outlet,
-  redirect,
   Link,
+  redirect,
   useNavigate,
-  useRouterState,
 } from "@tanstack/react-router";
 
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-  SidebarFooter,
-  SidebarHeader,
-  useSidebar,
-} from "@/components/ui/sidebar";
-
-import {
-  LayoutDashboard,
-  Users,
-  Sparkles,
-  FileText,
-  LogOut,
-  Plus,
-} from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-
-import { pb } from "@/lib/pb";
+import { supabase } from "../lib/supabase";
 
 export const Route = createFileRoute(
   "/_authenticated"
 )({
-  beforeLoad: ({
-    context,
-    location,
-  }) => {
-    if (!context.auth.isAuthenticated()) {
+  beforeLoad: async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
       throw redirect({
         to: "/login",
-
-        search: {
-          redirect: location.href,
-        } as any,
       });
     }
   },
 
-  component: AuthLayout,
+  component: AuthenticatedLayout,
 });
 
-const items = [
-  {
-    title: "Tableau de bord",
-    url: "/dashboard",
-    icon: LayoutDashboard,
-  },
-
-  {
-    title: "Clients",
-    url: "/clients",
-    icon: Users,
-  },
-
-  {
-    title: "Prestations",
-    url: "/services",
-    icon: Sparkles,
-  },
-
-  {
-    title: "Devis",
-    url: "/devis",
-    icon: FileText,
-  },
-];
-
-function AppSidebar() {
-  const { state } = useSidebar();
-
-  const collapsed =
-    state === "collapsed";
-
-  const path = useRouterState({
-    select: (r) =>
-      r.location.pathname,
-  });
-
+function AuthenticatedLayout() {
   const navigate = useNavigate();
 
-  const logout = () => {
-    pb.authStore.clear();
+  async function logout() {
+    await supabase.auth.signOut();
 
     navigate({
       to: "/login",
     });
-  };
+  }
 
   return (
-    <Sidebar
-      collapsible="icon"
-      className="border-r border-gold/20"
-    >
-      <SidebarHeader className="border-b border-gold/20 bg-gradient-beige">
-        <div className="flex items-center gap-2 px-2 py-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-gradient-gold text-primary-foreground shadow-soft">
-            <Sparkles className="h-5 w-5" />
+    <div className="flex min-h-screen bg-[#f5f1e8]">
+
+      {/* Sidebar */}
+
+      <aside className="w-64 bg-[#efe8d8] p-6 flex flex-col justify-between">
+
+        <div>
+
+          <div className="mb-12">
+
+            <h1 className="text-5xl font-bold leading-none text-[#d4a028]">
+              Deco
+              <br />
+              Even221
+            </h1>
+
+            <p className="text-gray-500 mt-2 tracking-widest">
+              ATELIER
+            </p>
+
           </div>
 
-          {!collapsed && (
-            <div className="overflow-hidden">
-              <p className="font-display text-lg leading-none">
-                Deco Even221
-              </p>
+          <nav className="space-y-4">
 
-              <p className="text-[10px] uppercase tracking-widest text-gold">
-                Atelier
-              </p>
-            </div>
-          )}
-        </div>
-      </SidebarHeader>
-
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>
-            Gestion
-          </SidebarGroupLabel>
-
-          <SidebarGroupContent>
-            <SidebarMenu>
-  {items.map((it) => {
-    const active =
-      path === it.url ||
-      path.startsWith(it.url + "/");
-
-    return (
-      <SidebarMenuItem key={it.url}>
-        <SidebarMenuButton
-          asChild
-          isActive={active}
-        >
-          <Link
-            to={it.url}
-            className="flex items-center gap-2"
-          >
-            <it.icon className="h-4 w-4" />
-
-            {!collapsed && (
-              <span>{it.title}</span>
-            )}
-          </Link>
-        </SidebarMenuButton>
-      </SidebarMenuItem>
-    );
-  })}
-</SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupContent className="px-2">
-            <Link to="/devis/new">
-              <Button
-                size={
-                  collapsed
-                    ? "icon"
-                    : "default"
-                }
-                className="w-full bg-gradient-gold text-primary-foreground hover:opacity-90"
-              >
-                <Plus className="h-4 w-4" />
-
-                {!collapsed && (
-                  <span className="ml-1">
-                    Nouveau devis
-                  </span>
-                )}
-              </Button>
+            <Link
+              to="/dashboard"
+              className="block px-4 py-3 rounded-2xl hover:bg-[#e5d5b8]"
+            >
+              Tableau de bord
             </Link>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
 
-      <SidebarFooter className="border-t border-gold/20">
-        <Button
-          variant="ghost"
-          onClick={logout}
-          className="justify-start"
-        >
-          <LogOut className="h-4 w-4" />
+            <Link
+              to="/clients"
+              className="block px-4 py-3 rounded-2xl hover:bg-[#e5d5b8]"
+            >
+              Clients
+            </Link>
 
-          {!collapsed && (
-            <span className="ml-2">
-              Déconnexion
-            </span>
-          )}
-        </Button>
-      </SidebarFooter>
-    </Sidebar>
-  );
-}
+            <Link
+              to="/devis"
+              className="block px-4 py-3 rounded-2xl hover:bg-[#e5d5b8]"
+            >
+              Devis
+            </Link>
 
-function AuthLayout() {
-  return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
-        <AppSidebar />
+          </nav>
 
-        <div className="flex flex-1 flex-col">
-          <header className="sticky top-0 z-10 flex h-14 items-center border-b border-gold/20 bg-card/80 px-4 backdrop-blur">
-            <SidebarTrigger />
-
-            <div className="ml-3 font-display text-lg">
-              Deco{" "}
-              <span className="text-gold">
-                Even221
-              </span>
-            </div>
-          </header>
-
-          <main className="flex-1 p-4 md:p-8">
-            <Outlet />
-          </main>
         </div>
-      </div>
-    </SidebarProvider>
+
+        <div className="space-y-3">
+
+          <Link
+            to="/devis/new"
+            className="block text-center bg-[#d4a028] text-white py-4 rounded-2xl font-bold hover:opacity-90"
+          >
+            + Nouveau devis
+          </Link>
+
+          <button
+            onClick={logout}
+            className="w-full bg-red-500 text-white py-4 rounded-2xl font-bold hover:bg-red-600"
+          >
+            Déconnexion
+          </button>
+
+        </div>
+
+      </aside>
+
+      {/* Contenu */}
+
+      <main className="flex-1">
+        <Outlet />
+      </main>
+
+    </div>
   );
 }
