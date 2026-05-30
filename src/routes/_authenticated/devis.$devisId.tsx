@@ -52,18 +52,15 @@ console.log("items.length =", itemsData?.length);
   async function downloadPDF() {
     if (!pdfRef.current) return;
 
-    const canvas = await html2canvas(
-  pdfRef.current,
-  {
-    scale: 0.8,
-    useCORS: true,
-    backgroundColor: "#ffffff",
-  }
-);
+    const canvas = await html2canvas(pdfRef.current, {
+  scale: 2,
+  useCORS: true,
+  backgroundColor: "#ffffff",
+});
 
     const imgData = canvas.toDataURL(
   "image/jpeg",
-  0.6
+  0.80
 );
 
     const pdf = new jsPDF("p", "mm", "a4");
