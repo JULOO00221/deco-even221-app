@@ -53,11 +53,18 @@ console.log("items.length =", itemsData?.length);
     if (!pdfRef.current) return;
 
     const canvas = await html2canvas(
-      pdfRef.current
-    );
+  pdfRef.current,
+  {
+    scale: 0.8,
+    useCORS: true,
+    backgroundColor: "#ffffff",
+  }
+);
 
-    const imgData =
-      canvas.toDataURL("image/png");
+    const imgData = canvas.toDataURL(
+  "image/jpeg",
+  0.6
+);
 
     const pdf = new jsPDF("p", "mm", "a4");
 
@@ -74,8 +81,8 @@ console.log("items.length =", itemsData?.length);
     let position = 0;
 
     pdf.addImage(
-      imgData,
-      "PNG",
+  imgData,
+  "JPEG",
       0,
       position,
       imgWidth,
@@ -90,13 +97,13 @@ console.log("items.length =", itemsData?.length);
       pdf.addPage();
 
       pdf.addImage(
-        imgData,
-        "PNG",
-        0,
-        position,
-        imgWidth,
-        imgHeight
-      );
+  imgData,
+  "JPEG",
+  0,
+  position,
+  imgWidth,
+  imgHeight
+);
 
       heightLeft -= pageHeight;
     }
